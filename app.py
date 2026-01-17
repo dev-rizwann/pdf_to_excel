@@ -5,7 +5,7 @@ import os
 import tempfile
 from werkzeug.utils import secure_filename
 
-from converter import convert_pdfs_to_excel  # <-- IMPORTANT: import from converter.py
+from web import convert_pdfs_to_excel  # <-- IMPORTANT: import from converter.py
 
 
 app = Flask(__name__, template_folder="templates")
