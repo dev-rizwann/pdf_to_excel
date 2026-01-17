@@ -340,3 +340,4 @@ def convert_pdfs_to_excel(pdf_paths, output_dir):
 
     print(f"[INFO] Excel file created: {out_xlsx}")
     return out_xlsx
+#love 
