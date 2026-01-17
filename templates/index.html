@@ -1,117 +1,389 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>PDF to Excel</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF to Excel</title>
 
-    <style>
-        :root {
-            --bg: #f6f8fb;
-            --card: #ffffff;
-            --primary: #2563eb;
-            --text: #1f2937;
-            --muted: #6b7280;
-            --border: #e5e7eb;
-        }
+  <style>
+    :root{
+      --bg:#f4f6fb;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#c7d2fe;
+      --borderActive:#2563eb;
+      --primary:#2563eb;
+      --primaryHover:#1e40af;
+      --danger:#dc2626;
+      --shadow: 0 10px 28px rgba(0,0,0,0.08);
+      --radius:14px;
+    }
 
-        * {
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        }
+    *{ box-sizing:border-box; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg);
-            color: var(--text);
-        }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:var(--bg);
+      padding:24px;
+    }
 
-        .card {
-            background: var(--card);
-            padding: 28px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-        }
+    .card{
+      width:min(520px, 100%);
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
 
-        h2 {
-            margin: 0 0 6px;
-            font-size: 1.4rem;
-        }
+    h1{
+      margin:0 0 6px 0;
+      font-size:1.35rem;
+      color:var(--text);
+    }
 
-        p {
-            margin: 0 0 20px;
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
+    .subtitle{
+      margin:0 0 18px 0;
+      color:var(--muted);
+      font-size:0.95rem;
+      line-height:1.35;
+    }
 
-        .file-input {
-            border: 2px dashed var(--border);
-            border-radius: 10px;
-            padding: 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 0.2s, background 0.2s;
-        }
+    .dropzone{
+      border:2px dashed var(--border);
+      border-radius:12px;
+      padding:22px 16px;
+      text-align:center;
+      cursor:pointer;
+      transition: border-color .15s, background .15s;
+      user-select:none;
+      outline:none;
+    }
 
-        .file-input:hover {
-            border-color: var(--primary);
-            background: #f1f5ff;
-        }
+    .dropzone:hover{
+      background:#f5f7ff;
+      border-color:var(--borderActive);
+    }
 
-        .file-input input {
-            display: none;
-        }
+    .dropzone.is-dragover{
+      background:#eef2ff;
+      border-color:var(--borderActive);
+    }
 
-        .file-input span {
-            display: block;
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
+    .drop-title{
+      font-weight:650;
+      color:var(--text);
+      margin-bottom:6px;
+    }
 
-        button {
-            margin-top: 20px;
-            width: 100%;
-            padding: 12px;
-            font-size: 0.95rem;
-            border: none;
-            border-radius: 8px;
-            background: var(--primary);
-            color: #fff;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.05s;
-        }
+    .drop-sub{
+      color:var(--muted);
+      font-size:0.9rem;
+    }
 
-        button:hover {
-            background: #1d4ed8;
-        }
+    .hint{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:0.85rem;
+    }
 
-        button:active {
-            transform: translateY(1px);
-        }
-    </style>
+    .filelist{
+      margin:14px 0 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:8px;
+    }
+
+    .fileitem{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:10px 12px;
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      background:#fff;
+      gap:10px;
+    }
+
+    .filemeta{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+
+    .filename{
+      color:var(--text);
+      font-size:0.92rem;
+      font-weight:600;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:340px;
+    }
+
+    .filesize{
+      color:var(--muted);
+      font-size:0.82rem;
+      margin-top:2px;
+    }
+
+    .remove-btn{
+      border:none;
+      background:transparent;
+      color:var(--danger);
+      font-weight:650;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:8px;
+    }
+    .remove-btn:hover{ background:#fee2e2; }
+
+    .row{
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    button{
+      height:44px;
+      border:none;
+      border-radius:10px;
+      background:var(--primary);
+      color:#fff;
+      font-size:0.95rem;
+      cursor:pointer;
+      transition: background .15s, opacity .15s;
+      padding:0 14px;
+      width:100%;
+    }
+
+    button:hover{ background:var(--primaryHover); }
+
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .ghost{
+      background:#eef2ff;
+      color:#1f2937;
+    }
+    .ghost:hover{ background:#e0e7ff; }
+
+    .error{
+      margin-top:12px;
+      color:var(--danger);
+      font-size:0.9rem;
+      display:none;
+    }
+    .error.show{ display:block; }
+
+    /* hidden input */
+    input[type="file"]{ display:none; }
+  </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>PDF to Excel</h2>
-        <p>Upload one or more invoice PDFs and convert them to Excel.</p>
+  <main class="card">
+    <h1>PDF → Excel</h1>
+    <p class="subtitle">
+      Upload one or more invoice PDFs. We’ll convert them and return an Excel file.
+    </p>
 
-        <form method="post" enctype="multipart/form-data">
-            <label class="file-input">
-                <input type="file" name="pdfs" multiple required>
-                <strong>Select PDF files</strong>
-                <span>or drag & drop here</span>
-            </label>
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+      <input id="fileInput" type="file" name="pdfs" multiple accept="application/pdf,.pdf" />
 
-            <button type="submit">Convert</button>
-        </form>
-    </div>
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload PDF files">
+        <div class="drop-title">Click to choose PDFs</div>
+        <div class="drop-sub">or drag & drop files here</div>
+        <div class="hint">PDF only • Multiple files supported</div>
+      </div>
 
+      <div class="error" id="errorBox"></div>
+
+      <ul class="filelist" id="fileList" aria-live="polite"></ul>
+
+      <div class="row">
+        <button type="button" class="ghost" id="clearBtn" disabled>Clear</button>
+        <button type="submit" id="submitBtn" disabled>Convert</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const dropzone  = document.getElementById("dropzone");
+    const fileList  = document.getElementById("fileList");
+    const errorBox  = document.getElementById("errorBox");
+    const submitBtn = document.getElementById("submitBtn");
+    const clearBtn  = document.getElementById("clearBtn");
+
+    // We'll keep our own list so we can remove single files
+    let selectedFiles = [];
+
+    function formatBytes(bytes) {
+      if (!Number.isFinite(bytes)) return "";
+      const units = ["B","KB","MB","GB"];
+      let i = 0, n = bytes;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return `${n.toFixed(i === 0 ? 0 : 2)} ${units[i]}`;
+    }
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.add("show");
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.classList.remove("show");
+    }
+
+    function isPdf(file) {
+      // Some browsers may leave type empty; extension check helps
+      const nameOk = file.name.toLowerCase().endsWith(".pdf");
+      const typeOk = file.type === "application/pdf";
+      return typeOk || nameOk;
+    }
+
+    function syncInputFiles() {
+      // Rebuild a FileList using DataTransfer so form submit sends our current set
+      const dt = new DataTransfer();
+      selectedFiles.forEach(f => dt.items.add(f));
+      fileInput.files = dt.files;
+    }
+
+    function render() {
+      fileList.innerHTML = "";
+
+      if (selectedFiles.length === 0) {
+        submitBtn.disabled = true;
+        clearBtn.disabled = true;
+        dropzone.querySelector(".drop-title").textContent = "Click to choose PDFs";
+        return;
+      }
+
+      submitBtn.disabled = false;
+      clearBtn.disabled = false;
+
+      dropzone.querySelector(".drop-title").textContent =
+        `${selectedFiles.length} file${selectedFiles.length > 1 ? "s" : ""} selected`;
+
+      selectedFiles.forEach((file, idx) => {
+        const li = document.createElement("li");
+        li.className = "fileitem";
+
+        const meta = document.createElement("div");
+        meta.className = "filemeta";
+
+        const name = document.createElement("div");
+        name.className = "filename";
+        name.textContent = file.name;
+
+        const size = document.createElement("div");
+        size.className = "filesize";
+        size.textContent = formatBytes(file.size);
+
+        meta.appendChild(name);
+        meta.appendChild(size);
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "remove-btn";
+        remove.textContent = "Remove";
+        remove.addEventListener("click", () => {
+          selectedFiles.splice(idx, 1);
+          syncInputFiles();
+          render();
+        });
+
+        li.appendChild(meta);
+        li.appendChild(remove);
+        fileList.appendChild(li);
+      });
+    }
+
+    function addFiles(files) {
+      clearError();
+
+      const incoming = Array.from(files);
+
+      // Validate PDFs
+      const nonPdf = incoming.find(f => !isPdf(f));
+      if (nonPdf) {
+        showError(`"${nonPdf.name}" is not a PDF. Please upload PDF files only.`);
+        return;
+      }
+
+      // Prevent duplicates by (name + size + lastModified)
+      const key = f => `${f.name}::${f.size}::${f.lastModified}`;
+      const existing = new Set(selectedFiles.map(key));
+      const merged = [...selectedFiles];
+
+      for (const f of incoming) {
+        if (!existing.has(key(f))) merged.push(f);
+      }
+
+      selectedFiles = merged;
+      syncInputFiles();
+      render();
+    }
+
+    // Click/keyboard opens file picker
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    // Native picker
+    fileInput.addEventListener("change", (e) => addFiles(e.target.files));
+
+    // Drag & drop
+    ["dragenter","dragover"].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add("is-dragover");
+      });
+    });
+
+    ["dragleave","drop"].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove("is-dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length) addFiles(files);
+    });
+
+    clearBtn.addEventListener("click", () => {
+      selectedFiles = [];
+      syncInputFiles();
+      clearError();
+      render();
+    });
+
+    // Optional: block submit if somehow empty
+    document.getElementById("uploadForm").addEventListener("submit", (e) => {
+      if (!fileInput.files || fileInput.files.length === 0) {
+        e.preventDefault();
+        showError("Please select at least one PDF first.");
+      }
+    });
+
+    render();
+  </script>
 </body>
 </html>
